@@ -4,3 +4,6 @@ GET {{WebApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+POST {{WebApi_HostAddress}}/articles/
+Accept: application/json
+Body: {Id: 1, Name: "Test 1", Description: "dasdsad", Title: "Test 1", Author: "Furkan Bakal"}
