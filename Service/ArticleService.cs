@@ -2,6 +2,7 @@
 using Repository;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,26 +11,33 @@ namespace Service
 {
     public class ArticleService
     {
-        private readonly ArticleRepository _articlesRepository;
+        private readonly ArticleRepository _articlesRepository = new();
 
-        public ArticleService()
+        public ResponseModelDto<IImmutableList<ArticleDto>> GetAll()
         {
-            _articlesRepository = new ArticleRepository();
+            var articles = _articlesRepository.GetAll().ToImmutableList();
+
+            return ResponseModelDto<IImmutableList<ArticleDto>>.Success(articles);
         }
 
-        public IReadOnlyList<ArticleEntity> GetAll()
+        public void Add(ArticleDto article)
         {
-            return _articlesRepository.GetAll();
+            return ResponseModelDto<ArticleDto>.Success(_articlesRepository.Add(article);
         }
 
-        public void Add(ArticleEntity article)
+        public ResponseModelDto<ArticleDto?> GetById(int id)
         {
-            _articlesRepository.Add(article);
+            var article = _articlesRepository.GetById(id);
+            if (article is null)
+            {
+                return ResponseModelDto<ArticleDto?>.Failure("Article not found");
+            }
+            return ResponseModelDto<ArticleDto>.Success(article);
         }
 
-        public ArticleEntity GetById(int id)
+        public void Remove(int id)
         {
-            return _articlesRepository.GetById(id);
+            _articlesRepository.Remove(id);
         }
     }
 }

@@ -9,11 +9,7 @@ namespace WebApi.Controllers
     [ApiController]
     public class ArticlesController : ControllerBase
     {
-        private readonly ArticleService _articlesService;
-        public ArticlesController()
-        {
-            _articlesService = new ArticleService();
-        }
+        private readonly ArticleService _articlesService = new();
 
         [HttpGet]
         public IActionResult Get()
@@ -23,18 +19,31 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] ArticleEntity article)
+        public IActionResult Post([FromBody] ArticleDto article)
         {
-            _articlesService.Add(article);
-            return CreatedAtAction(nameof(Get), new { id = _articlesService.GetAll().Count - 1 }, article);
+            var result = _articlesService.Add(article);
+            return CreatedAtAction(nameof(GetById), new { id = _articlesService.GetAll().Data.Count - 1 }, article);
         }
 
-        [HttpGet]
-        [Route("{id}")]
+        [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
             var article = _articlesService.GetById(id);
+
+            if (!article.IsSuccess)
+            {
+                return NotFound(article.FailMessages);
+            }
+
             return Ok(article);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult Delete(int id)
+        {
+            _articlesService.Remove(id);
+            return NoContent();
         }
     }
 }
