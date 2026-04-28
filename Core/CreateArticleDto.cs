@@ -6,5 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core
 {
-    public record ArticleDto(int Id, string Title, string Content, string Author, string CreatedDate, string UpdatedDate);
+    public record CreateArticleDto(string Content, string Title, string Author)
+    {
+    }
 }

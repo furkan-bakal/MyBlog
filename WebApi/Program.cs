@@ -1,8 +1,15 @@
+using Core;
+using Repository;
+using Service;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<IArticleService, ArticleService>();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

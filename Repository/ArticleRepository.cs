@@ -8,28 +8,22 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class ArticleRepository : IBaseRepository<ArticleEntity>
+    public class ArticleRepository : IArticleRepository
     {
         private static readonly List<ArticleEntity> _articles = new List<ArticleEntity>();
 
-        public void Add(ArticleEntity entity) => _articles.Add(entity);
+        public void Add(ArticleEntity articleEntity) => _articles.Add(articleEntity);
 
         public IReadOnlyList<ArticleEntity> GetAll() => _articles;
 
         public ArticleEntity? GetById(int Id) => _articles.FirstOrDefault(x => x.Id == Id);
 
-        public void Remove(int Id)
+        public void Remove(ArticleEntity articleEntity) => _articles.Remove(articleEntity);
+
+        public void Update(ArticleEntity articleEntity)
         {
-            var article = GetById(Id);
-
-            _articles.Remove(article!);
-        }
-
-        public void Update(ArticleEntity entity)
-        {
-            var index = _articles.FindIndex(x => x.Id == entity.Id);
-
-            _articles[index] = entity;
+            var index = _articles.FindIndex(x => x.Id == articleEntity.Id);
+            _articles[index] = articleEntity;
         }
     }
 }

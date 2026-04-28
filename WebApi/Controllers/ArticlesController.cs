@@ -7,43 +7,45 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ArticlesController : ControllerBase
+    public class ArticlesController : CustomBaseController
     {
-        private readonly ArticleService _articlesService = new();
+        private readonly IArticleService _articleService;
+
+        public ArticlesController(IArticleService articleService)
+        {
+            _articleService = articleService;
+        }
 
         [HttpGet]
         public IActionResult Get()
         {
-            var articles = _articlesService.GetAll();
-            return Ok(articles);
+            return CreateActionResult(_articleService.GetAll());
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] ArticleDto article)
+        public IActionResult Post([FromBody] CreateArticleDto createArticleDto)
         {
-            var result = _articlesService.Add(article);
-            return CreatedAtAction(nameof(GetById), new { id = _articlesService.GetAll().Data.Count - 1 }, article);
+            var result = _articleService.Add(createArticleDto);
+            return CreateActionResult(result, nameof(GetById), new { id = result.Data });
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var article = _articlesService.GetById(id);
+            return CreateActionResult(_articleService.GetById(id));
+        }
 
-            if (!article.IsSuccess)
-            {
-                return NotFound(article.FailMessages);
-            }
-
-            return Ok(article);
+        [HttpPut("{id}")]
+        public IActionResult Put(int id, [FromBody] UpdateArticleDto updateArticleDto)
+        {
+            return CreateActionResult(_articleService.Update(id, updateArticleDto));
         }
 
         [HttpDelete]
         [Route("{id}")]
         public IActionResult Delete(int id)
         {
-            _articlesService.Remove(id);
-            return NoContent();
+            return CreateActionResult(_articleService.Remove(id));
         }
     }
 }
