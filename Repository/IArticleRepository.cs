@@ -2,12 +2,7 @@
 
 namespace Repository
 {
-    public interface IArticleRepository
+    public interface IArticleRepository: IGenericRepository<ArticleEntity>
     {
-        void Add(ArticleEntity articleEntity);
-        IReadOnlyList<ArticleEntity> GetAll();
-        ArticleEntity? GetById(int Id);
-        void Remove(ArticleEntity articleEntity);
-        void Update(ArticleEntity articleEntity);
     }
 }

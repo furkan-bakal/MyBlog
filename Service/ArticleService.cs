@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.ArticleCreateUseCase;
 using Repository;
 using System.Collections.Immutable;
 using System.Net;
@@ -8,73 +9,75 @@ namespace Service
     public class ArticleService : IArticleService
     {
         private readonly IArticleRepository _articleRepository;
+        private IUnitOfWork _unitOfWork;
 
-        public ArticleService(IArticleRepository articleRepository)
+        public ArticleService(IArticleRepository articleRepository, IUnitOfWork unitOfWork)
         {
             _articleRepository = articleRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public ResponseModelDto<IImmutableList<ArticleDto>> GetAll()
+        public async Task<ResponseModelDto<IImmutableList<ArticleDto>>> GetAll()
         {
-            var articles = _articleRepository.GetAll().ToImmutableList();
+            var articles = await _articleRepository.GetAll();
             var tranformedArticles = articles.Select(a =>
-            new ArticleDto(a.Id, a.Title, a.Content, a.Author, a.CreatedDate.ToShortDateString(), a.UpdatedDate.ToShortDateString()))
+            new ArticleDto(a.Id, a.Title, a.Content, a.Author, a.CreatedDate.ToShortDateString(), a.UpdatedDate?.ToShortDateString()))
                 .ToImmutableList();
             return ResponseModelDto<IImmutableList<ArticleDto>>.Success(tranformedArticles);
         }
 
-        public ResponseModelDto<int> Add(CreateArticleDto createArticleDto)
+        public async Task<ResponseModelDto<int>> Add(CreateArticleDto createArticleDto)
         {
             var entity = new ArticleEntity
             {
-                Id =   _articleRepository.GetAll().Count()+1,
                 Content = createArticleDto.Content,
                 Title = createArticleDto.Title,
                 Author = createArticleDto.Author,
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.UtcNow
             };
-            _articleRepository.Add(entity);
+            await _articleRepository.Add(entity);
+            await _unitOfWork.CommitAsync();
             return ResponseModelDto<int>.Success(entity.Id);
         }
 
-        public ResponseModelDto<ArticleDto?> GetById(int id)
+        public async Task<ResponseModelDto<ArticleDto?>> GetById(int id)
         {
-            var article = _articleRepository.GetById(id);
+            var article = await _articleRepository.GetById(id);
             if (article is null)
             {
                 return ResponseModelDto<ArticleDto?>.Failure("Article not found");
             }
-            var articleDto = new ArticleDto(article.Id, article.Title, article.Content, article.Author, article.CreatedDate.ToShortDateString(), article.UpdatedDate.ToShortDateString());
+            var articleDto = new ArticleDto(article.Id, article.Title, article.Content, article.Author, article.CreatedDate.ToShortDateString(), article.UpdatedDate?.ToShortDateString());
             return ResponseModelDto<ArticleDto?>.Success(articleDto);
         }
 
-        public ResponseModelDto<NoContent> Remove(int id)
+        public async Task<ResponseModelDto<NoContent>> Remove(int id)
         {
-            var article = _articleRepository.GetById(id);
+            var article = await _articleRepository.GetById(id);
             if (article is null)
             {
                 return ResponseModelDto<NoContent>.Failure("Article not found", HttpStatusCode.NotFound);
             }
-            _articleRepository.Remove(article);
+            await _articleRepository.Remove(article);
+            await _unitOfWork.CommitAsync();
             return ResponseModelDto<NoContent>.Success(HttpStatusCode.NoContent);
         }
 
-        public ResponseModelDto<NoContent> Update(int id, UpdateArticleDto updateArticleDto)
+        public async Task<ResponseModelDto<NoContent>> Update(int id, UpdateArticleDto updateArticleDto)
         {
-            var article = _articleRepository.GetById(id);
+            var article = await _articleRepository.GetById(id);
             if (article is null)
             {
                 return ResponseModelDto<NoContent>.Failure("Article not found", HttpStatusCode.NotFound);
             }
-            var updatedArticle = new ArticleEntity
-            {
-                Id = id,
-                Content = updateArticleDto.Content,
-                Title = updateArticleDto.Title,
-                Author = updateArticleDto.Author,
-                UpdatedDate = DateTime.Now
-            };
-            _articleRepository.Update(updatedArticle);
+
+            article.Content = updateArticleDto.Content;
+            article.Title = updateArticleDto.Title;
+            article.Author = updateArticleDto.Author;
+            article.UpdatedDate = DateTime.UtcNow;
+
+            await _articleRepository.Update(article);
+            await _unitOfWork.CommitAsync();
             return ResponseModelDto<NoContent>.Success(HttpStatusCode.NoContent);
         }
     }

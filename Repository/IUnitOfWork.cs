@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core
+namespace Repository
 {
-    public record CreateArticleDto(string Content, string Title, string Author)
+    public interface IUnitOfWork
     {
+        int Commit();
+        Task<int> CommitAsync();
     }
 }

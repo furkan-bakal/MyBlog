@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.ArticleCreateUseCase;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
@@ -17,35 +18,35 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            return CreateActionResult(_articleService.GetAll());
+            return CreateActionResult(await _articleService.GetAll());
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] CreateArticleDto createArticleDto)
+        public async Task<IActionResult> Post([FromBody] CreateArticleDto createArticleDto)
         {
-            var result = _articleService.Add(createArticleDto);
+            var result = await _articleService.Add(createArticleDto);
             return CreateActionResult(result, nameof(GetById), new { id = result.Data });
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            return CreateActionResult(_articleService.GetById(id));
+            return CreateActionResult(await _articleService.GetById(id));
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] UpdateArticleDto updateArticleDto)
+        public async Task<IActionResult> Put(int id, [FromBody] UpdateArticleDto updateArticleDto)
         {
-            return CreateActionResult(_articleService.Update(id, updateArticleDto));
+            return CreateActionResult(await _articleService.Update(id, updateArticleDto));
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            return CreateActionResult(_articleService.Remove(id));
+            return CreateActionResult(await _articleService.Remove(id));
         }
     }
 }
