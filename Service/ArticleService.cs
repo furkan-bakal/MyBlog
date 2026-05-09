@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using AutoMapper;
+using Core;
 using Core.ArticleCreateUseCase;
 using Repository;
 using System.Collections.Immutable;
@@ -10,19 +11,20 @@ namespace Service
     {
         private readonly IArticleRepository _articleRepository;
         private IUnitOfWork _unitOfWork;
+        private IMapper _mapper;
 
-        public ArticleService(IArticleRepository articleRepository, IUnitOfWork unitOfWork)
+        public ArticleService(IArticleRepository articleRepository, IUnitOfWork unitOfWork, IMapper mapper)
         {
             _articleRepository = articleRepository;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<ResponseModelDto<IImmutableList<ArticleDto>>> GetAll()
         {
-            var articles = await _articleRepository.GetAll();
-            var tranformedArticles = articles.Select(a =>
-            new ArticleDto(a.Id, a.Title, a.Content, a.Author, a.CreatedDate.ToShortDateString(), a.UpdatedDate?.ToShortDateString()))
-                .ToImmutableList();
+            var articles = (await _articleRepository.GetAll()).ToList();
+            
+            var tranformedArticles = _mapper.Map<List<ArticleEntity>, List<ArticleDto>>(articles).ToImmutableList();
             return ResponseModelDto<IImmutableList<ArticleDto>>.Success(tranformedArticles);
         }
 
@@ -43,11 +45,8 @@ namespace Service
         public async Task<ResponseModelDto<ArticleDto?>> GetById(int id)
         {
             var article = await _articleRepository.GetById(id);
-            if (article is null)
-            {
-                return ResponseModelDto<ArticleDto?>.Failure("Article not found");
-            }
-            var articleDto = new ArticleDto(article.Id, article.Title, article.Content, article.Author, article.CreatedDate.ToShortDateString(), article.UpdatedDate?.ToShortDateString());
+
+            var articleDto = _mapper.Map<ArticleEntity, ArticleDto>(article!);
             return ResponseModelDto<ArticleDto?>.Success(articleDto);
         }
 

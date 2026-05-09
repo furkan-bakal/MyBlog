@@ -3,6 +3,7 @@ using Core.ArticleCreateUseCase;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
+using WebApi.Filters;
 
 namespace WebApi.Controllers
 {
@@ -30,7 +31,8 @@ namespace WebApi.Controllers
             return CreateActionResult(result, nameof(GetById), new { id = result.Data });
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
+        [ServiceFilter(typeof(NotFoundFilter))]
         public async Task<IActionResult> GetById(int id)
         {
             return CreateActionResult(await _articleService.GetById(id));
@@ -43,7 +45,7 @@ namespace WebApi.Controllers
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             return CreateActionResult(await _articleService.Remove(id));
