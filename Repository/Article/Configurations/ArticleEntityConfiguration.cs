@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Repository.Configurations
+namespace Repository
 {
     public class ArticleEntityConfiguration:IEntityTypeConfiguration<ArticleEntity>
     {

@@ -21,8 +21,8 @@ namespace WebApi.Filters
                 context.Result = new NotFoundObjectResult(responseModel);
             }
 
-            var hasArticle = articleRepository.GetById(articleId).Result;
-            if (hasArticle is null)
+            var hasArticle = articleRepository.HasExist(articleId).Result;
+            if (!hasArticle)
             {
                 var errorMessage = $"Article with id {articleId} not found in {actionMethod} method.";
                 var responseModel = ResponseModelDto<NoContent>.Failure(errorMessage, HttpStatusCode.NotFound);

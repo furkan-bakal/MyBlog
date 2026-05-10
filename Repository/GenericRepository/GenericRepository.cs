@@ -1,13 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repository
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity<int>
     {
         public DbSet<T> DbSet { get; set; }
 
@@ -42,6 +38,11 @@ namespace Repository
         {
             DbSet.Update(entity);
             return Task.CompletedTask;
+        }
+
+        public Task<bool> HasExist(int id)
+        {
+            return DbSet.AnyAsync(x => x.Id == id);
         }
     }
 }

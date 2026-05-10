@@ -1,11 +1,4 @@
-﻿using Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Repository
+﻿namespace Repository
 {
     //Servisler genericleştirilmez.
     public interface IGenericRepository<T>
@@ -15,5 +8,6 @@ namespace Repository
         Task<T?> GetById(int Id);
         Task Remove(T entity);
         Task Update(T entity);
+        Task<bool> HasExist(int id);
     }
 }

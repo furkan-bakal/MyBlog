@@ -1,7 +1,7 @@
 using Core;
-using Core.ArticleCreateUseCase;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository;
 using Service;
@@ -14,18 +14,24 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection"));
 });
 
-// Add services to the container.
 
-builder.Services.AddControllers();
-builder.Services.AddScoped<NotFoundFilter>();
-builder.Services.AddScoped<IArticleService, ArticleService>();
-builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.Configure<ApiBehaviorOptions>(x =>
+{
+    x.SuppressModelStateInvalidFilter = true;
+});
+
+
+// Add services to the container.
+builder.Services.AddArticleService();
+
+builder.Services.AddControllers(x => x.Filters.Add<ValidationFilter>());
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+builder.Services.AddAutoMapper(cfg => { }, typeof(ServiceAssembly).Assembly);
+builder.Services.AddArticleService();
 
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<ArticleCreateRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CoreAssembly>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

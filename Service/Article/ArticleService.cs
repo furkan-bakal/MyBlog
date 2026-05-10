@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Core;
-using Core.ArticleCreateUseCase;
 using Repository;
 using System.Collections.Immutable;
 using System.Net;

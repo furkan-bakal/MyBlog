@@ -1,8 +1,8 @@
 namespace Core
 {
-    public abstract class BaseEntity
+    public abstract class BaseEntity<T>
     {
-        public int Id { get; set; }
+        public T Id { get; set; } = default!;
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
     }

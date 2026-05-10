@@ -1,6 +1,5 @@
-﻿using Core;
-using Core.ArticleCreateUseCase;
-using Microsoft.AspNetCore.Http;
+﻿
+using Core;
 using Microsoft.AspNetCore.Mvc;
 using Service;
 using WebApi.Filters;
@@ -38,7 +37,7 @@ namespace WebApi.Controllers
             return CreateActionResult(await _articleService.GetById(id));
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] UpdateArticleDto updateArticleDto)
         {
             return CreateActionResult(await _articleService.Update(id, updateArticleDto));
