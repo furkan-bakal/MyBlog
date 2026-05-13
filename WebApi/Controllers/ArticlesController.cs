@@ -20,6 +20,7 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            throw new Exception("Test exception");
             return CreateActionResult(await _articleService.GetAll());
         }
 
