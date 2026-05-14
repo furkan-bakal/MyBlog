@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿
+
+using FluentValidation;
 
 namespace Core
 {

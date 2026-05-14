@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers(x => x.Filters.Add<ValidationFilter>());
 
 builder.Services.AddRepository(builder.Configuration);
-builder.Services.AddService();
+builder.Services.AddService(builder.Configuration);
 
 builder.Services.AddValidatorsFromAssemblyContaining<CoreAssembly>();
 
