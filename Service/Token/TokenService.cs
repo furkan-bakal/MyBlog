@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Service.Token
 {
-    public class TokenService(IOptions<TokenOptions> tokenOptions, IOptions<Clients> clients): ITokenService
+    public class TokenService(IOptions<CustomTokenOptions> tokenOptions, IOptions<Clients> clients): ITokenService
     {
         public Task<ResponseModelDto<TokenResponseDto>> GetAccessTokenAsync(GetAccessTokenRequestDto request, CancellationToken cancellationToken)
         {
@@ -29,6 +29,8 @@ namespace Service.Token
             var jwtToken = new JwtSecurityToken(
                 claims: claims,
                 expires: tokenExpire,
+                issuer: tokenOptions.Value.Issuer,
+                audience: tokenOptions.Value.Audience,
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 

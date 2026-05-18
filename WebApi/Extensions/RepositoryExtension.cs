@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository;
+using System.Reflection;
 
 namespace WebApi.Extensions
 {
@@ -9,7 +10,10 @@ namespace WebApi.Extensions
         {
             service.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(configuration.GetConnectionString("PostgreSqlConnection"));
+                options.UseNpgsql(configuration.GetConnectionString("PostgreSqlConnection"), optionsBuilder =>
+                {
+                    optionsBuilder.MigrationsAssembly(Assembly.GetAssembly(typeof(RepositoryAssembly))!.GetName().Name);
+                });
             });
 
             service.AddScoped<IUnitOfWork, UnitOfWork>();
