@@ -1,4 +1,4 @@
-﻿using Core;
+using Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +18,7 @@ namespace WebApi.Controllers
                 };
             }
 
-            return new ObjectResult(response.Data)
+            return new ObjectResult(response)
             {
                 StatusCode = (int)response.StatusCode
             };
@@ -31,7 +31,7 @@ namespace WebApi.Controllers
                 return CreatedAtAction(methodName, routeValues, null);
             }
 
-            return new ObjectResult(response.Data)
+            return new ObjectResult(response)
             {
                 StatusCode = (int)response.StatusCode
             };

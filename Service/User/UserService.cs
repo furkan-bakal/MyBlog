@@ -20,6 +20,12 @@ namespace Service.User
     {
         public async Task<ResponseModelDto<string>> SignUpAsync(SignUpRequestDto request)
         {
+
+            if(IsUserMailExist(request.Email))
+            {
+                return ResponseModelDto<string>.Failure("Email is already exist!");
+            }
+
             var user = new AppUser
             {
                 UserName = request.UserName,
@@ -103,5 +109,10 @@ namespace Service.User
 
         }
 
+        public bool IsUserMailExist(string email)
+        {
+            var user = userManager.FindByEmailAsync(email).Result;
+            return user is not null;
+        }
     }
 }

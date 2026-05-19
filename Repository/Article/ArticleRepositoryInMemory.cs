@@ -1,4 +1,4 @@
-﻿using Core;
+using Core;
 
 namespace Repository.Article
 {
@@ -10,7 +10,7 @@ namespace Repository.Article
 
         public IReadOnlyList<ArticleEntity> GetAll() => _articles;
 
-        public ArticleEntity? GetById(int Id) => _articles.FirstOrDefault(x => x.Id == Id);
+        public ArticleEntity? GetById(Guid Id) => _articles.FirstOrDefault(x => x.Id == Id);
 
         public void Remove(ArticleEntity articleEntity) => _articles.Remove(articleEntity);
 

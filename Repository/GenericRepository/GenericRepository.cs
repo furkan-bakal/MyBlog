@@ -1,9 +1,9 @@
-﻿using Core;
+using Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Repository
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity<int>
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity<Guid>
     {
         public DbSet<T> DbSet { get; set; }
 
@@ -23,14 +23,17 @@ namespace Repository
             return list.AsReadOnly();
         }
 
-        public async Task<T?> GetById(int Id)
+        public async Task<T?> GetById(Guid Id)
         {
             return await DbSet.FindAsync(Id);
         }
 
         public async Task Remove(T entity)
         {
-            DbSet.Remove(entity);
+            entity.IsDeleted = true;
+            entity.DeletedDate = DateTime.UtcNow;
+
+            DbSet.Update(entity);
             await Task.CompletedTask;
         }
 
@@ -40,7 +43,7 @@ namespace Repository
             return Task.CompletedTask;
         }
 
-        public Task<bool> HasExist(int id)
+        public Task<bool> HasExist(Guid id)
         {
             return DbSet.AnyAsync(x => x.Id == id);
         }

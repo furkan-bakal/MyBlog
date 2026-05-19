@@ -1,4 +1,4 @@
-﻿using Core;
+using Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Repository;
@@ -12,13 +12,14 @@ namespace WebApi.Filters
         {
             var actionMethod = ((ControllerBase)context.Controller).ControllerContext.ActionDescriptor.ActionName;
 
-            var id = (int)context.ActionArguments.Values.First()!;
+            var idValue = context.ActionArguments.Values.FirstOrDefault();
 
-            if(!int.TryParse(id.ToString(), out int articleId))
+            if(idValue == null || !Guid.TryParse(idValue.ToString(), out Guid articleId))
             {
-                var errorMessage = "Id değeri sayısal olmalıdır!";
+                var errorMessage = "Id değeri geçersiz (Guid olmalıdır)!";
                 var responseModel = ResponseModelDto<NoContent>.Failure(errorMessage);
-                context.Result = new NotFoundObjectResult(responseModel);
+                context.Result = new BadRequestObjectResult(responseModel);
+                return;
             }
 
             var hasArticle = articleRepository.HasExist(articleId).Result;

@@ -1,4 +1,4 @@
-﻿
+
 using Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +21,6 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            throw new Exception("Test exception for global handler");
             return CreateActionResult(await _articleService.GetAll());
         }
 
@@ -34,24 +33,24 @@ namespace WebApi.Controllers
         }
 
         [Authorize()]
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:guid}")]
         [ServiceFilter(typeof(NotFoundFilter))]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             return CreateActionResult(await _articleService.GetById(id));
         }
 
         [Authorize(Roles = "admin")]
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Put(int id, [FromBody] UpdateArticleDto updateArticleDto)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateArticleDto updateArticleDto)
         {
             return CreateActionResult(await _articleService.Update(id, updateArticleDto));
         }
 
         [Authorize(Roles = "admin")]
         [HttpDelete]
-        [Route("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
+        [Route("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
             return CreateActionResult(await _articleService.Remove(id));
         }

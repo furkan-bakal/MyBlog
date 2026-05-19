@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core;
 using Repository;
 using System.Collections.Immutable;
@@ -27,7 +27,7 @@ namespace Service
             return ResponseModelDto<IImmutableList<ArticleDto>>.Success(tranformedArticles);
         }
 
-        public async Task<ResponseModelDto<int>> Add(CreateArticleDto createArticleDto)
+        public async Task<ResponseModelDto<Guid>> Add(CreateArticleDto createArticleDto)
         {
             var entity = new ArticleEntity
             {
@@ -38,10 +38,10 @@ namespace Service
             };
             await _articleRepository.Add(entity);
             await _unitOfWork.CommitAsync();
-            return ResponseModelDto<int>.Success(entity.Id);
+            return ResponseModelDto<Guid>.Success(entity.Id);
         }
 
-        public async Task<ResponseModelDto<ArticleDto?>> GetById(int id)
+        public async Task<ResponseModelDto<ArticleDto?>> GetById(Guid id)
         {
             var article = await _articleRepository.GetById(id);
 
@@ -49,7 +49,7 @@ namespace Service
             return ResponseModelDto<ArticleDto?>.Success(articleDto);
         }
 
-        public async Task<ResponseModelDto<NoContent>> Remove(int id)
+        public async Task<ResponseModelDto<NoContent>> Remove(Guid id)
         {
             var article = await _articleRepository.GetById(id);
             if (article is null)
@@ -61,7 +61,7 @@ namespace Service
             return ResponseModelDto<NoContent>.Success(HttpStatusCode.NoContent);
         }
 
-        public async Task<ResponseModelDto<NoContent>> Update(int id, UpdateArticleDto updateArticleDto)
+        public async Task<ResponseModelDto<NoContent>> Update(Guid id, UpdateArticleDto updateArticleDto)
         {
             var article = await _articleRepository.GetById(id);
             if (article is null)

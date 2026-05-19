@@ -1,6 +1,6 @@
 namespace Core
 {
-    public class ArticleEntity : BaseEntity<int>
+    public class ArticleEntity : BaseEntity<Guid>
     {
         public string Content { get; set; } = default!;
         public string Title { get; set; } = default!;

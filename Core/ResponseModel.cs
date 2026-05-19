@@ -51,5 +51,5 @@ namespace Core
                 StatusCode = statusCode
             };
         }
-    }
+    }   
 }
