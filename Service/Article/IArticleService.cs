@@ -1,4 +1,5 @@
 using Core;
+using Core.Article.Dto;
 using System.Collections.Immutable;
 
 namespace Service

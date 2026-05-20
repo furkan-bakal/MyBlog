@@ -1,4 +1,4 @@
-namespace Core
+namespace Core.Article.Entity
 {
     public class ArticleEntity : BaseEntity<Guid>
     {

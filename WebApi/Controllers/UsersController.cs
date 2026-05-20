@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Service.Token;
 using Service.User;
 
 namespace WebApi.Controllers
@@ -17,6 +18,12 @@ namespace WebApi.Controllers
         public async Task<IActionResult> SignIn(SignInRequestDto request)
         {
             return CreateActionResult(await userService.SignInAsync(request));
+        }
+
+        [HttpPost("signinbyrefreshtoken")]
+        public async Task<IActionResult> SignInByRefreshToken(CreateAccessTokenByRefreshTokenRequestDto request)
+        {
+            return CreateActionResult(await userService.SignInByRefreshTokenAsync(request));
         }
     }
 }

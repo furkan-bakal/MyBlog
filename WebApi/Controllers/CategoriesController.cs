@@ -1,35 +1,33 @@
-
-using Core;
-using Core.Article.Dto;
+﻿using Core.Category.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Service;
+using Service.Category;
 using WebApi.Filters;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ArticlesController : CustomBaseController
+    public class CategoriesController : CustomBaseController
     {
-        private readonly IArticleService _articleService;
+        private readonly ICategoryService _categoryService;
 
-        public ArticlesController(IArticleService articleService)
+        public CategoriesController(ICategoryService categoryService)
         {
-            _articleService = articleService;
+            _categoryService = categoryService;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return CreateActionResult(await _articleService.GetAll());
+            return CreateActionResult(await _categoryService.GetAll());
         }
 
         [Authorize(Roles = "admin")]
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateArticleDto createArticleDto)
+        public async Task<IActionResult> Post([FromBody] CreateCategoryDto createCategoryDto)
         {
-            var result = await _articleService.Add(createArticleDto);
+            var result = await _categoryService.Add(createCategoryDto);
             return CreateActionResult(result, nameof(GetById), new { id = result.Data });
         }
 
@@ -38,14 +36,14 @@ namespace WebApi.Controllers
         [ServiceFilter(typeof(NotFoundFilter))]
         public async Task<IActionResult> GetById(Guid id)
         {
-            return CreateActionResult(await _articleService.GetById(id));
+            return CreateActionResult(await _categoryService.GetById(id));
         }
 
         [Authorize(Roles = "admin")]
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateArticleDto updateArticleDto)
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateCategoryDto updateCategoryDto)
         {
-            return CreateActionResult(await _articleService.Update(id, updateArticleDto));
+            return CreateActionResult(await _categoryService.Update(id, updateCategoryDto));
         }
 
         [Authorize(Roles = "admin")]
@@ -53,7 +51,7 @@ namespace WebApi.Controllers
         [Route("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            return CreateActionResult(await _articleService.Remove(id));
+            return CreateActionResult(await _categoryService.Remove(id));
         }
     }
 }

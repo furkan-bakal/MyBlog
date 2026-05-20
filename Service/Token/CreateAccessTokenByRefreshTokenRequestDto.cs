@@ -6,5 +6,6 @@ using System.Threading.Tasks;
 
 namespace Service.Token
 {
-    public record TokenResponseDto(string AccessToken, string RefreshToken);
+    public record CreateAccessTokenByRefreshTokenRequestDto(Guid RefreshToken);
+
 }

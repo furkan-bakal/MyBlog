@@ -12,5 +12,6 @@ namespace Service.Token
         public int ExpireByHour { get; set; }
         public string Issuer { get; set; } = default!;
         public string Audience { get; set; } = default!;
+        public int RefreshTokenByExpireDay { get; set; }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Repository;
 using Repository.Identity;
 using Service;
+using Service.Category;
 using Service.ExceptionHandlers;
 using Service.Logger;
 using Service.Token;
@@ -31,6 +32,7 @@ namespace WebApi.Extensions
                 x.SuppressModelStateInvalidFilter = true;
             });
             service.AddArticleService();
+            service.AddCategoryService();
             service.AddExceptionHandler<GlobalExceptionHandler>();
             service.AddProblemDetails();
 

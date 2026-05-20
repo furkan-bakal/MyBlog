@@ -1,8 +1,11 @@
 ﻿using Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Repository;
 using Repository.Identity;
+using Repository.Tokens;
 using Service.Token;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -15,7 +18,9 @@ namespace Service.User
     public class UserService(
         UserManager<AppUser> userManager,
         RoleManager<AppRole> roleManager,
-        IOptions<CustomTokenOptions> tokenOptions
+        IOptions<CustomTokenOptions> tokenOptions,
+        IGenericRepository<RefreshToken> refreshTokenRepository,
+        IUnitOfWork unitOfWork
         )
     {
         public async Task<ResponseModelDto<string>> SignUpAsync(SignUpRequestDto request)
@@ -30,7 +35,7 @@ namespace Service.User
             {
                 UserName = request.UserName,
                 Email = request.Email,
-                Id = Guid.NewGuid().ToString()
+                Id = Guid.NewGuid()
             };
             var result = await userManager.CreateAsync(user, request.Password);
 
@@ -39,7 +44,7 @@ namespace Service.User
                 return ResponseModelDto<string>.Failure(result.Errors.Select(e => e.Description).ToList());
             }
 
-            return ResponseModelDto<string>.Success(user.Id, HttpStatusCode.Created);
+            return ResponseModelDto<string>.Success(user.Id.ToString(), HttpStatusCode.Created);
         }
 
         public async Task<ResponseModelDto<TokenResponseDto>> SignInAsync(SignInRequestDto request)
@@ -55,6 +60,87 @@ namespace Service.User
                 return ResponseModelDto<TokenResponseDto>.Failure(new List<string> { "Invalid email or password!" });
             }
 
+            var userClaimList = await CreateUserClaim(user, new List<string>());
+
+            var accessToken = CreateAccessToken(userClaimList, tokenOptions.Value);
+
+            var refreshToken = await CreateOrUpdateRefreshToken(user.Id);
+
+            await unitOfWork.CommitAsync();
+            return ResponseModelDto<TokenResponseDto>.Success(new TokenResponseDto(accessToken, refreshToken));
+
+        }
+
+        public async Task<ResponseModelDto<TokenResponseDto>> SignInByRefreshTokenAsync(CreateAccessTokenByRefreshTokenRequestDto request)
+        {
+            var hasRefrehToken = await refreshTokenRepository.Where(x => x.Code == request.RefreshToken).SingleOrDefaultAsync();
+            if (hasRefrehToken is null)
+            {
+                return ResponseModelDto<TokenResponseDto>.Failure("Refresh token not found!", HttpStatusCode.NotFound);
+            }
+            if (hasRefrehToken.ExpireDate < DateTime.Now)
+            {
+                return ResponseModelDto<TokenResponseDto>.Failure("Refresh token expired!", HttpStatusCode.BadRequest);
+            }
+            var user = await userManager.FindByIdAsync(hasRefrehToken.UserId.ToString());
+            if (user is null)
+            {
+                return ResponseModelDto<TokenResponseDto>.Failure("User not found!", HttpStatusCode.NotFound);
+            }
+            var userClaimList = await CreateUserClaim(user, new List<string>());
+            var accessToken = CreateAccessToken(userClaimList, tokenOptions.Value);
+            var refreshToken = await CreateOrUpdateRefreshToken(user.Id);
+            await unitOfWork.CommitAsync();
+            return ResponseModelDto<TokenResponseDto>.Success(new TokenResponseDto(accessToken, refreshToken));
+        }
+
+
+        private async Task<string> CreateOrUpdateRefreshToken(Guid userId)
+        {
+            var hasRefreshToken = await refreshTokenRepository.Where(x => x.UserId == userId).SingleOrDefaultAsync();
+
+            if (hasRefreshToken is null)
+            {
+                hasRefreshToken = new RefreshToken
+                {
+                    UserId = userId,
+                    Code = Guid.NewGuid(),
+                    ExpireDate = DateTime.Now.AddDays(tokenOptions.Value.RefreshTokenByExpireDay)
+                };
+
+                await refreshTokenRepository.Add(hasRefreshToken);
+            }
+            else
+            {
+                hasRefreshToken.Code = Guid.NewGuid();
+                hasRefreshToken.ExpireDate = DateTime.Now.AddDays(tokenOptions.Value.RefreshTokenByExpireDay);
+                await refreshTokenRepository.Update(hasRefreshToken);
+            }
+
+            return hasRefreshToken.Code.ToString();
+        }
+
+        private string CreateAccessToken(List<Claim> claimList, CustomTokenOptions tokenOptions)
+        {
+
+            var tokenExpire = DateTime.Now.AddHours(tokenOptions.ExpireByHour);
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.Signature));
+
+            var jwtToken = new JwtSecurityToken(
+                claims: claimList,
+                expires: tokenExpire,
+                issuer: tokenOptions.Issuer,
+                audience: tokenOptions.Audience,
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            );
+
+            var handler = new JwtSecurityTokenHandler();
+
+            return handler.WriteToken(jwtToken);
+        }
+
+        private async Task<List<Claim>> CreateUserClaim(AppUser user, List<string> roles)
+        {
             var userClaimList = new List<Claim>();
 
             userClaimList.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
@@ -89,24 +175,7 @@ namespace Service.User
                 }
 
             }
-
-            var tokenExpire = DateTime.Now.AddHours(tokenOptions.Value.ExpireByHour);
-            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.Value.Signature));
-
-            var jwtToken = new JwtSecurityToken(
-                claims: userClaimList,
-                expires: tokenExpire,
-                issuer: tokenOptions.Value.Issuer,
-                audience: tokenOptions.Value.Audience,
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-            );
-
-            var handler = new JwtSecurityTokenHandler();
-
-            var token = handler.WriteToken(jwtToken);
-
-            return ResponseModelDto<TokenResponseDto>.Success(new TokenResponseDto(token), HttpStatusCode.OK);
-
+            return userClaimList;
         }
 
         public bool IsUserMailExist(string email)

@@ -31,7 +31,7 @@ namespace Service.User
             {
                 user = new AppUser
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid(),
                     UserName = "admin",
                     Email = "admin@example.com",
                     SecurityStamp = Guid.NewGuid().ToString()

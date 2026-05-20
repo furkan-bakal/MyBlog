@@ -1,5 +1,6 @@
 using Core;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Repository
 {
@@ -46,6 +47,11 @@ namespace Repository
         public Task<bool> HasExist(Guid id)
         {
             return DbSet.AnyAsync(x => x.Id == id);
+        }
+
+        public IQueryable<T> Where(Expression<Func<T, bool>> predicate)
+        {
+            return DbSet.Where(predicate);
         }
     }
 }

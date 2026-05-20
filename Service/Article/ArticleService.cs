@@ -1,5 +1,7 @@
 using AutoMapper;
 using Core;
+using Core.Article.Dto;
+using Core.Article.Entity;
 using Repository;
 using System.Collections.Immutable;
 using System.Net;

@@ -1,5 +1,6 @@
 ﻿
 
+using Core.Article.Dto;
 using FluentValidation;
 
 namespace Core

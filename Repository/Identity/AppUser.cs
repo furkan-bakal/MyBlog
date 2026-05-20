@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Identity
 {
-    public class AppUser : IdentityUser<string>
+    public class AppUser : IdentityUser<Guid>
     {
     }
 }

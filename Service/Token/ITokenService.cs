@@ -9,6 +9,7 @@ namespace Service.Token
 {
     public interface ITokenService
     {
-        Task<ResponseModelDto<TokenResponseDto>> GetAccessTokenAsync(GetAccessTokenRequestDto request, CancellationToken cancellationToken);
+        Task<ResponseModelDto<TokenResponseDto>> CreateClientAccessTokenAsync(GetAccessTokenRequestDto request, CancellationToken cancellationToken);
+        Task<ResponseModelDto<NoContent>> RevokeRefreshToken(Guid code);
     }
 }

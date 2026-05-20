@@ -1,4 +1,5 @@
 using Core;
+using System.Linq.Expressions;
 
 namespace Repository
 {
@@ -11,5 +12,6 @@ namespace Repository
         Task Remove(T entity);
         Task Update(T entity);
         Task<bool> HasExist(Guid id);
+        IQueryable<T> Where(Expression<Func<T, bool>> predicate);
     }
 }
