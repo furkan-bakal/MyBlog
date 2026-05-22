@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Service.Token;
 using Service.User;
 
@@ -14,12 +15,14 @@ namespace WebApi.Controllers
             return CreateActionResult(await userService.SignUpAsync(request));
         }
 
+        [Authorize]
         [HttpPost("signin")]
         public async Task<IActionResult> SignIn(SignInRequestDto request)
         {
             return CreateActionResult(await userService.SignInAsync(request));
         }
 
+        [Authorize]
         [HttpPost("signinbyrefreshtoken")]
         public async Task<IActionResult> SignInByRefreshToken(CreateAccessTokenByRefreshTokenRequestDto request)
         {

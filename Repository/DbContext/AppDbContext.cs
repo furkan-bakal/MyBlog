@@ -1,4 +1,4 @@
-﻿using Core;
+using Core;
 using Core.Article.Entity;
 using Core.Category.Entity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -22,6 +22,13 @@ namespace Repository
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ArticleEntity>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<CategoryEntity>().HasQueryFilter(x => !x.IsDeleted);
+
+            modelBuilder.Entity<ArticleEntity>()
+                .HasOne(x => x.Category)
+                .WithMany(x => x.Articles)
+                .HasForeignKey(x => x.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }

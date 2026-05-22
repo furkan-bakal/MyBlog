@@ -1,7 +1,8 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core;
 using Core.Category.Dto;
 using Core.Category.Entity;
+using Microsoft.EntityFrameworkCore;
 using Repository;
 using Repository.Category;
 using System.Collections.Immutable;
@@ -12,12 +13,18 @@ namespace Service.Category
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
-        private IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
+        private readonly IArticleRepository _articleRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork, IMapper mapper)
+        public CategoryService(
+            ICategoryRepository categoryRepository,
+            IArticleRepository articleRepository,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
             _categoryRepository = categoryRepository;
+            _articleRepository = articleRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
@@ -46,7 +53,7 @@ namespace Service.Category
             var category = await _categoryRepository.GetById(id);
 
             var categoryDto = _mapper.Map<CategoryEntity, CategoryDto>(category!);
-            return ResponseModelDto<CategoryDto?>.Success(articleDto);
+            return ResponseModelDto<CategoryDto?>.Success(categoryDto);
         }
 
         public async Task<ResponseModelDto<NoContent>> Remove(Guid id)
@@ -56,6 +63,14 @@ namespace Service.Category
             {
                 return ResponseModelDto<NoContent>.Failure("Category not found", HttpStatusCode.NotFound);
             }
+
+            // Soft delete all articles in this category
+            var articles = await _articleRepository.Where(x => x.CategoryId == id).ToListAsync();
+            foreach (var article in articles)
+            {
+                await _articleRepository.Remove(article);
+            }
+
             await _categoryRepository.Remove(category);
             await _unitOfWork.CommitAsync();
             return ResponseModelDto<NoContent>.Success(HttpStatusCode.NoContent);

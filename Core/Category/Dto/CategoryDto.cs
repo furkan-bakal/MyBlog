@@ -1,4 +1,4 @@
 namespace Core.Category.Dto
 {
-    public record CategoryDto(int Id, string Name);
+    public record CategoryDto(Guid Id, string Name);
 }

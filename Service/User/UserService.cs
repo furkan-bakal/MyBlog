@@ -105,7 +105,7 @@ namespace Service.User
                 {
                     UserId = userId,
                     Code = Guid.NewGuid(),
-                    ExpireDate = DateTime.Now.AddDays(tokenOptions.Value.RefreshTokenByExpireDay)
+                    ExpireDate = DateTime.UtcNow.AddDays(tokenOptions.Value.RefreshTokenByExpireDay)
                 };
 
                 await refreshTokenRepository.Add(hasRefreshToken);
@@ -113,7 +113,7 @@ namespace Service.User
             else
             {
                 hasRefreshToken.Code = Guid.NewGuid();
-                hasRefreshToken.ExpireDate = DateTime.Now.AddDays(tokenOptions.Value.RefreshTokenByExpireDay);
+                hasRefreshToken.ExpireDate = DateTime.UtcNow.AddDays(tokenOptions.Value.RefreshTokenByExpireDay);
                 await refreshTokenRepository.Update(hasRefreshToken);
             }
 

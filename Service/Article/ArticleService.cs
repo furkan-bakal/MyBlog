@@ -36,6 +36,7 @@ namespace Service
                 Content = createArticleDto.Content,
                 Title = createArticleDto.Title,
                 Author = createArticleDto.Author,
+                CategoryId = createArticleDto.CategoryId,
                 CreatedDate = DateTime.UtcNow
             };
             await _articleRepository.Add(entity);
@@ -74,6 +75,7 @@ namespace Service
             article.Content = updateArticleDto.Content;
             article.Title = updateArticleDto.Title;
             article.Author = updateArticleDto.Author;
+            article.CategoryId = updateArticleDto.CategoryId;
             article.UpdatedDate = DateTime.UtcNow;
 
             await _articleRepository.Update(article);
