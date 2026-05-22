@@ -46,7 +46,7 @@ namespace Service.Category
             var category = await _categoryRepository.GetById(id);
 
             var categoryDto = _mapper.Map<CategoryEntity, CategoryDto>(category!);
-            return ResponseModelDto<CategoryDto?>.Success(categoryDto);
+            return ResponseModelDto<CategoryDto?>.Success(articleDto);
         }
 
         public async Task<ResponseModelDto<NoContent>> Remove(Guid id)
