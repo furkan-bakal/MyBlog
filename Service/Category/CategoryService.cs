@@ -48,12 +48,12 @@ namespace Service.Category
             return ResponseModelDto<Guid>.Success(entity.Id);
         }
 
-        public async Task<ResponseModelDto<CategoryDto?>> GetById(Guid id)
+        public async Task<ResponseModelDto<CategoryWithArticlesDto?>> GetByIdWithArticles(Guid id)
         {
-            var category = await _categoryRepository.GetById(id);
+            var category = await _categoryRepository.GetByIdWithArticles(id);
 
-            var categoryDto = _mapper.Map<CategoryEntity, CategoryDto>(category!);
-            return ResponseModelDto<CategoryDto?>.Success(categoryDto);
+            var categoryDto = _mapper.Map<CategoryEntity, CategoryWithArticlesDto>(category!);
+            return ResponseModelDto<CategoryWithArticlesDto?>.Success(categoryDto);
         }
 
         public async Task<ResponseModelDto<NoContent>> Remove(Guid id)

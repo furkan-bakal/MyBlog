@@ -11,5 +11,6 @@ namespace Service
         Task<ResponseModelDto<ArticleDto?>> GetById(Guid id);
         Task<ResponseModelDto<NoContent>> Update(Guid id, UpdateArticleDto updateArticleDto);
         Task<ResponseModelDto<NoContent>> Remove(Guid id);
+        Task<ResponseModelDto<IImmutableList<ArticleDto>>> GetAllByPaginate(int take, int skip);
     }
 }

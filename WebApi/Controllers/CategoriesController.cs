@@ -23,20 +23,18 @@ namespace WebApi.Controllers
             return CreateActionResult(await _categoryService.GetAll());
         }
 
-        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateCategoryDto createCategoryDto)
         {
             var result = await _categoryService.Add(createCategoryDto);
-            return CreateActionResult(result, nameof(GetById), new { id = result.Data });
+            return CreateActionResult(result, nameof(GetByIdWithArticles), new { id = result.Data });
         }
 
-        [Authorize()]
         [HttpGet("{id:guid}")]
-        [ServiceFilter(typeof(NotFoundFilter))]
-        public async Task<IActionResult> GetById(Guid id)
+        //[ServiceFilter(typeof(NotFoundFilter))]
+        public async Task<IActionResult> GetByIdWithArticles(Guid id)
         {
-            return CreateActionResult(await _categoryService.GetById(id));
+            return CreateActionResult(await _categoryService.GetByIdWithArticles(id));
         }
 
         [Authorize(Roles = "admin")]

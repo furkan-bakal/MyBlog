@@ -1,4 +1,7 @@
 namespace Core.Category.Dto
 {
-    public record CreateCategoryDto(string Name);
+    public record CreateCategoryDto
+    {
+        public string Name { get; init; } = default!;
+    }
 }

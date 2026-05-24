@@ -21,6 +21,9 @@ namespace Core
             RuleFor(x => x.Author)
                 .NotEmpty().WithMessage("Author is required.")
                 .MaximumLength(100).WithMessage("Author cannot exceed 100 characters.");
+
+            RuleFor(x => x.CategoryId)
+                .NotEmpty().WithMessage("CategoryId is required");
         }
     }
 }

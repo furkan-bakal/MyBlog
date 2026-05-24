@@ -36,8 +36,7 @@ namespace Service
                 Content = createArticleDto.Content,
                 Title = createArticleDto.Title,
                 Author = createArticleDto.Author,
-                CategoryId = createArticleDto.CategoryId,
-                CreatedDate = DateTime.UtcNow
+                CategoryId = createArticleDto.CategoryId
             };
             await _articleRepository.Add(entity);
             await _unitOfWork.CommitAsync();
@@ -46,7 +45,7 @@ namespace Service
 
         public async Task<ResponseModelDto<ArticleDto?>> GetById(Guid id)
         {
-            var article = await _articleRepository.GetById(id);
+            var article = await _articleRepository.GetByIdWithCategory(id);
 
             var articleDto = _mapper.Map<ArticleEntity, ArticleDto>(article!);
             return ResponseModelDto<ArticleDto?>.Success(articleDto);
@@ -76,11 +75,17 @@ namespace Service
             article.Title = updateArticleDto.Title;
             article.Author = updateArticleDto.Author;
             article.CategoryId = updateArticleDto.CategoryId;
-            article.UpdatedDate = DateTime.UtcNow;
 
             await _articleRepository.Update(article);
             await _unitOfWork.CommitAsync();
             return ResponseModelDto<NoContent>.Success(HttpStatusCode.NoContent);
+        }
+
+        public async Task<ResponseModelDto<IImmutableList<ArticleDto>>> GetAllByPaginate(int take, int skip)
+        {
+            var articles = (await _articleRepository.GetAllByPaginate(take, skip)).ToList();
+            var tranformedArticles = _mapper.Map<List<ArticleEntity>, List<ArticleDto>>(articles).ToImmutableList();
+            return ResponseModelDto<IImmutableList<ArticleDto>>.Success(tranformedArticles);
         }
     }
 }

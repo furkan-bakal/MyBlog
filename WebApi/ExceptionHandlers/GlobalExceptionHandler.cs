@@ -8,7 +8,7 @@ namespace WebApi.ExceptionHandlers
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
 
-            //logger.LogError(exception, exception.Message);
+            logger.LogError(exception, exception.Message);
 
             var responseModel = ResponseModelDto<NoContent>.Failure(exception.Message, System.Net.HttpStatusCode.InternalServerError);
 

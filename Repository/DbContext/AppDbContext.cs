@@ -19,6 +19,43 @@ namespace Repository
         public DbSet <CategoryEntity> Categories { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var entries = ChangeTracker.Entries<BaseEntity<Guid>>();
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedDate = DateTime.UtcNow;
+                    entry.Entity.UpdatedDate = DateTime.UtcNow;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedDate = DateTime.UtcNow;
+                }
+            }
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            var entries = ChangeTracker.Entries<BaseEntity<Guid>>();
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedDate = DateTime.UtcNow;
+                    entry.Entity.UpdatedDate = DateTime.UtcNow;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedDate = DateTime.UtcNow;
+                }
+            }
+            return base.SaveChanges();
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ArticleEntity>().HasQueryFilter(x => !x.IsDeleted);
@@ -28,7 +65,7 @@ namespace Repository
                 .HasOne(x => x.Category)
                 .WithMany(x => x.Articles)
                 .HasForeignKey(x => x.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); 
 
             base.OnModelCreating(modelBuilder);
         }

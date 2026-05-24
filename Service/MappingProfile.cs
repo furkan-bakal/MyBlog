@@ -1,5 +1,4 @@
 using AutoMapper;
-using Core;
 using Core.Article.Dto;
 using Core.Article.Entity;
 using Core.Category.Dto;
@@ -10,13 +9,17 @@ public class MappingProfile : Profile
     public MappingProfile()
     {
         CreateMap<ArticleEntity, ArticleDto>()
-            .ForCtorParam("CreatedDate", opt => opt.MapFrom(src => src.CreatedDate.ToShortDateString()))
-            .ForCtorParam("UpdatedDate", opt => opt.MapFrom(src => src.UpdatedDate.HasValue ? src.UpdatedDate.Value.ToShortDateString() : null))
+            .ForMember("CreatedDate", opt => opt.MapFrom(src => src.CreatedDate.ToShortDateString()))
+            .ForMember("UpdatedDate", opt => opt.MapFrom(src => src.UpdatedDate.HasValue ? src.UpdatedDate.Value.ToShortDateString() : null))
+            .ForMember("DeletedDate", opt => opt.MapFrom(src => src.DeletedDate.HasValue ? src.DeletedDate.Value.ToShortDateString() : null))
             .ReverseMap();
 
         CreateMap<CategoryEntity, CategoryDto>()
-            .ForCtorParam("CreatedDate", opt => opt.MapFrom(src => src.CreatedDate.ToShortDateString()))
-            .ForCtorParam("UpdatedDate", opt => opt.MapFrom(src => src.UpdatedDate.HasValue ? src.UpdatedDate.Value.ToShortDateString() : null))
-            .ReverseMap();  
+            .ForMember("CreatedDate", opt => opt.MapFrom(src => src.CreatedDate.ToShortDateString()))
+            .ForMember("UpdatedDate", opt => opt.MapFrom(src => src.UpdatedDate.HasValue ? src.UpdatedDate.Value.ToShortDateString() : null))
+            .ForMember("DeletedDate", opt => opt.MapFrom(src => src.DeletedDate.HasValue ? src.DeletedDate.Value.ToShortDateString() : null))
+            .ReverseMap();
+
+        CreateMap<CategoryEntity, CategoryWithArticlesDto>();
     }
 }
