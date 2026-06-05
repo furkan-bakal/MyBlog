@@ -26,6 +26,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Post([FromBody] CreateArticleDto createArticleDto)
         {
             var result = await _articleService.Add(createArticleDto);

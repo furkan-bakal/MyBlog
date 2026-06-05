@@ -1,0 +1,296 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MyBlog API",
+    "version": "1.0.0",
+    "description": "Auto-generated OpenAPI JSON for MyBlog WebApi project"
+  },
+  "servers": [
+    { "url": "http://localhost:5000", "description": "Local server" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ArticleDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "content": { "type": "string" },
+          "author": { "type": "string" },
+          "categoryId": { "type": "string", "format": "uuid" },
+          "createdDate": { "type": "string" },
+          "updatedDate": { "type": ["string", "null"] },
+          "isDeleted": { "type": "boolean" },
+          "deletedDate": { "type": ["string", "null"] }
+        }
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "required": ["Content", "Title", "Author", "CategoryId"],
+        "properties": {
+          "Content": { "type": "string" },
+          "Title": { "type": "string" },
+          "Author": { "type": "string" },
+          "CategoryId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "UpdateArticleDto": { "$ref": "#/components/schemas/CreateArticleDto" },
+
+      "CategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "createdDate": { "type": "string" },
+          "updatedDate": { "type": ["string", "null"] },
+          "isDeleted": { "type": "boolean" },
+          "deletedDate": { "type": ["string", "null"] }
+        }
+      },
+      "CategoryWithArticlesDto": {
+        "allOf": [
+          { "$ref": "#/components/schemas/CategoryDto" },
+          {
+            "type": "object",
+            "properties": {
+              "articles": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/ArticleDto" }
+              }
+            }
+          }
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": { "Name": { "type": "string" } },
+        "required": ["Name"]
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": { "Name": { "type": "string" } },
+        "required": ["Name"]
+      },
+
+      "SignUpRequestDto": {
+        "type": "object",
+        "properties": {
+          "UserName": { "type": "string" },
+          "Email": { "type": "string", "format": "email" },
+          "Password": { "type": "string" }
+        },
+        "required": ["UserName", "Email", "Password"]
+      },
+      "SignInRequestDto": {
+        "type": "object",
+        "properties": {
+          "Email": { "type": "string", "format": "email" },
+          "Password": { "type": "string" }
+        },
+        "required": ["Email", "Password"]
+      },
+      "CreateAccessTokenByRefreshTokenRequestDto": {
+        "type": "object",
+        "properties": { "RefreshToken": { "type": "string", "format": "uuid" } },
+        "required": ["RefreshToken"]
+      },
+      "GetAccessTokenRequestDto": {
+        "type": "object",
+        "properties": { "ClientId": { "type": "string" }, "ClientSecret": { "type": "string" } },
+        "required": ["ClientId", "ClientSecret"]
+      },
+      "TokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "AccessToken": { "type": "string" },
+          "RefreshToken": { "type": "string" }
+        }
+      },
+
+      "ResponseModel_Generic": {
+        "type": "object",
+        "properties": {
+          "isSuccess": { "type": "boolean" },
+          "failMessages": { "type": "array", "items": { "type": "string" } },
+          "data": { }
+        }
+      },
+      "ResponseModel_ArticleArray": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/ArticleDto" } } } }
+        ]
+      },
+      "ResponseModel_Article": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/ArticleDto" } } }
+        ]
+      },
+      "ResponseModel_Guid": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "type": "string", "format": "uuid" } } }
+        ]
+      },
+      "ResponseModel_CategoryArray": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/CategoryDto" } } } }
+        ]
+      },
+      "ResponseModel_CategoryWithArticles": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/CategoryWithArticlesDto" } } }
+        ]
+      },
+      "ResponseModel_String": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "type": "string" } } }
+        ]
+      },
+      "ResponseModel_TokenResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ResponseModel_Generic" },
+          { "type": "object", "properties": { "data": { "$ref": "#/components/schemas/TokenResponseDto" } } }
+        ]
+      }
+    }
+  },
+
+  "paths": {
+
+    "/api/articles": {
+      "get": {
+        "summary": "Get all articles",
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_ArticleArray" } } } } }
+      },
+      "post": {
+        "summary": "Create article",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateArticleDto" } } }
+        },
+        "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Guid" } } } } }
+      }
+    },
+
+    "/api/articles/{id}": {
+      "get": {
+        "summary": "Get article by id",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Article" } } } } }
+      },
+      "put": {
+        "summary": "Update article (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateArticleDto" } } } },
+        "responses": { "204": { "description": "No Content", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Generic" } } } } }
+      },
+      "delete": {
+        "summary": "Delete article (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "204": { "description": "No Content", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Generic" } } } } }
+      }
+    },
+
+    "/api/articles/getpaginate": {
+      "get": {
+        "summary": "Get articles by pagination",
+        "parameters": [
+          { "name": "take", "in": "query", "required": true, "schema": { "type": "integer" } },
+          { "name": "skip", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_ArticleArray" } } } } }
+      }
+    },
+
+    "/api/categories": {
+      "get": {
+        "summary": "Get all categories",
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_CategoryArray" } } } } }
+      },
+      "post": {
+        "summary": "Create category",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCategoryDto" } } } },
+        "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Guid" } } } } }
+      }
+    },
+
+    "/api/categories/{id}": {
+      "get": {
+        "summary": "Get category with articles",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_CategoryWithArticles" } } } } }
+      },
+      "put": {
+        "summary": "Update category (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateCategoryDto" } } } },
+        "responses": { "204": { "description": "No Content", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Generic" } } } } }
+      },
+      "delete": {
+        "summary": "Delete category (admin)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "204": { "description": "No Content", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Generic" } } } } }
+      }
+    },
+
+    "/api/users/signup": {
+      "post": {
+        "summary": "Sign up (create user)",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignUpRequestDto" } } } },
+        "responses": { "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_String" } } } } }
+      }
+    },
+
+    "/api/users/signin": {
+      "post": {
+        "summary": "Sign in (returns tokens)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignInRequestDto" } } } },
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_TokenResponse" } } } } }
+      }
+    },
+
+    "/api/users/signinbyrefreshtoken": {
+      "post": {
+        "summary": "Create access token by refresh token",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateAccessTokenByRefreshTokenRequestDto" } } } },
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_TokenResponse" } } } } }
+      }
+    },
+
+    "/api/token/createclientcredential": {
+      "post": {
+        "summary": "Create client credential access token",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/GetAccessTokenRequestDto" } } } },
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_TokenResponse" } } } } }
+      }
+    },
+
+    "/api/token/revokerefreshtoken/{code}": {
+      "post": {
+        "summary": "Revoke refresh token",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "code", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "204": { "description": "No Content", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResponseModel_Generic" } } } }, "404": { "description": "Not Found" } }
+      }
+    }
+
+  }
+}

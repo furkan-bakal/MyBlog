@@ -51,6 +51,18 @@ try
     // Add services to the container.
     builder.Services.AddControllers(x => x.Filters.Add<ValidationFilter>());
 
+    // CORS: allow Angular dev server
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAngularDevClient", policy =>
+        {
+            policy.WithOrigins("http://localhost:4200")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+    });
+
     builder.Services.AddRepository(builder.Configuration);
     builder.Services.AddService(builder.Configuration);
 
@@ -64,6 +76,10 @@ try
 
     // Configure the HTTP request pipeline.
     await app.seedUserData();
+
+    // Enable CORS policy
+    app.UseCors("AllowAngularDevClient");
+
     app.AddMiddleware();
 
     app.Run();
