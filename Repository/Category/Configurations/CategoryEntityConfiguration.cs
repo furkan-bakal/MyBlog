@@ -1,11 +1,6 @@
-﻿using Core.Category.Entity;
+using Core.Category.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.Category.Configurations
 {
@@ -13,6 +8,8 @@ namespace Repository.Category.Configurations
     {
         public void Configure(EntityTypeBuilder<CategoryEntity> builder)
         {
+            builder.HasQueryFilter(c => !c.IsDeleted);
+
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name)
                 .IsRequired()

@@ -20,6 +20,9 @@ public class MappingProfile : Profile
             .ForMember("DeletedDate", opt => opt.MapFrom(src => src.DeletedDate.HasValue ? src.DeletedDate.Value.ToShortDateString() : null))
             .ReverseMap();
 
+        CreateMap<ArticleImageEntity, ArticleImageDto>()
+            .ForMember("CreatedDate", opt => opt.MapFrom(src => src.CreatedDate.ToShortDateString()));
+
         CreateMap<CategoryEntity, CategoryWithArticlesDto>();
     }
 }
