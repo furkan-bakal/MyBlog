@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Article gorselleri - kullanici yuklemeleri repoya girmesin
+WebApi/wwwroot/uploads/

@@ -18,7 +18,7 @@ namespace Repository
             return entity;
         }
 
-        public async Task<IReadOnlyList<T>> GetAll()
+        public virtual async Task<IReadOnlyList<T>> GetAll()
         {
             var list = await DbSet.ToListAsync();
             return list.AsReadOnly();

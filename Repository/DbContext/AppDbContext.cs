@@ -16,6 +16,7 @@ namespace Repository
         }
 
         public DbSet<ArticleEntity> Articles { get; set; }
+        public DbSet<ArticleImageEntity> ArticleImages { get; set; }
         public DbSet <CategoryEntity> Categories { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -58,14 +59,8 @@ namespace Repository
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ArticleEntity>().HasQueryFilter(x => !x.IsDeleted);
-            modelBuilder.Entity<CategoryEntity>().HasQueryFilter(x => !x.IsDeleted);
-
-            modelBuilder.Entity<ArticleEntity>()
-                .HasOne(x => x.Category)
-                .WithMany(x => x.Articles)
-                .HasForeignKey(x => x.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade); 
+            // Soft-delete filtreleri, alan kısıtları ve ilişkiler IEntityTypeConfiguration sınıflarında tanımlı.
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
             base.OnModelCreating(modelBuilder);
         }

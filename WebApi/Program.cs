@@ -50,6 +50,7 @@ try
 
     // Add services to the container.
     builder.Services.AddControllers(x => x.Filters.Add<ValidationFilter>());
+    builder.Services.AddScoped<NotFoundFilter>();
 
     // CORS: allow Angular dev server
     builder.Services.AddCors(options =>

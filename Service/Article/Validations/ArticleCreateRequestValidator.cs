@@ -16,7 +16,7 @@ namespace Core
 
             RuleFor(x => x.Content)
                 .NotEmpty().WithMessage("Content is required.")
-                .MaximumLength(1000).WithMessage("Content cannot exceed 1000 characters.");
+                .MaximumLength(10000).WithMessage("Content cannot exceed 10000 characters.");
 
             RuleFor(x => x.Author)
                 .NotEmpty().WithMessage("Author is required.")

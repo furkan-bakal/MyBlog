@@ -9,5 +9,6 @@ namespace Core.Article.Entity
         public string Author { get; set; } = default!;
         public Guid CategoryId { get; set; }
         public CategoryEntity Category { get; set; } = default!;
+        public ICollection<ArticleImageEntity> Images { get; set; } = new List<ArticleImageEntity>();
     }
 }

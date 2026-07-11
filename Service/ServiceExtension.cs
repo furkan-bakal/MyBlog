@@ -32,6 +32,7 @@ namespace WebApi.Extensions
                 x.SuppressModelStateInvalidFilter = true;
             });
             service.AddArticleService();
+            service.AddArticleImageService();
             service.AddCategoryService();
             service.AddExceptionHandler<GlobalExceptionHandler>();
             service.AddProblemDetails();
