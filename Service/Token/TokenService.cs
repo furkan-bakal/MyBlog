@@ -26,7 +26,7 @@ namespace Service.Token
             {
                 new Claim("clientId", request.ClientId)
             };
-            var tokenExpire = DateTime.Now.AddHours(tokenOptions.Value.ExpireByHour);
+            var tokenExpire = DateTime.UtcNow.AddHours(tokenOptions.Value.ExpireByHour);
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.Value.Signature));
 
             var jwtToken = new JwtSecurityToken(

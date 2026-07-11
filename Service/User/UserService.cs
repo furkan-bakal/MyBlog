@@ -78,7 +78,9 @@ namespace Service.User
             {
                 return ResponseModelDto<TokenResponseDto>.Failure("Refresh token not found!", HttpStatusCode.NotFound);
             }
-            if (hasRefrehToken.ExpireDate < DateTime.Now)
+            // ExpireDate UTC olarak yazılıyor; karşılaştırma da UTC olmalı (yerel saatle
+            // kıyaslamak token'ın ömründen saat dilimi farkı kadar çalıyordu).
+            if (hasRefrehToken.ExpireDate < DateTime.UtcNow)
             {
                 return ResponseModelDto<TokenResponseDto>.Failure("Refresh token expired!", HttpStatusCode.BadRequest);
             }
@@ -123,7 +125,7 @@ namespace Service.User
         private string CreateAccessToken(List<Claim> claimList, CustomTokenOptions tokenOptions)
         {
 
-            var tokenExpire = DateTime.Now.AddHours(tokenOptions.ExpireByHour);
+            var tokenExpire = DateTime.UtcNow.AddHours(tokenOptions.ExpireByHour);
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenOptions.Signature));
 
             var jwtToken = new JwtSecurityToken(

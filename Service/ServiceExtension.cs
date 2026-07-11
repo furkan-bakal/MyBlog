@@ -33,6 +33,7 @@ namespace WebApi.Extensions
             });
             service.AddArticleService();
             service.AddArticleImageService();
+            service.AddImageService();
             service.AddCategoryService();
             service.AddExceptionHandler<GlobalExceptionHandler>();
             service.AddProblemDetails();
@@ -40,7 +41,15 @@ namespace WebApi.Extensions
             // Logger DI kaydı
             service.AddSingleton(typeof(IAppLogger<>), typeof(SerilogAppLogger<>));
 
-            service.Configure<CustomTokenOptions>(configuration.GetSection("TokenOptions"));
+            // Yanlış yazılmış bir anahtar (ör. "ExpireByHoure") sessizce 0 bağlanır ve token'lar
+            // doğdukları anda ölü olurdu. Bu yüzden değerler başlangıçta doğrulanıyor.
+            service.AddOptions<CustomTokenOptions>()
+                .Bind(configuration.GetSection("TokenOptions"))
+                .Validate(o => !string.IsNullOrWhiteSpace(o.Signature), "TokenOptions:Signature boş olamaz.")
+                .Validate(o => o.ExpireByHour >= 1, "TokenOptions:ExpireByHour en az 1 olmalı.")
+                .Validate(o => o.RefreshTokenByExpireDay >= 1, "TokenOptions:RefreshTokenByExpireDay en az 1 olmalı.")
+                .ValidateOnStart();
+
             service.Configure<Clients>(configuration.GetSection("Clients"));
             service.AddScoped<ITokenService, TokenService>();
             service.AddScoped<UserService>();

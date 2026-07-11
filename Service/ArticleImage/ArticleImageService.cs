@@ -12,11 +12,6 @@ namespace Service
 {
     public class ArticleImageService : IArticleImageService
     {
-        public const long MaxFileSizeInBytes = 5 * 1024 * 1024;
-
-        private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
-        private static readonly string[] AllowedContentTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
         private const string UploadFolder = "uploads/articles";
 
         private readonly IArticleImageRepository _articleImageRepository;
@@ -43,13 +38,16 @@ namespace Service
                 return ResponseModelDto<IImmutableList<ArticleImageDto>>.Failure("En az bir görsel yüklenmelidir.");
             }
 
-            var failMessages = files.SelectMany(Validate).ToList();
+            var failMessages = files.SelectMany(ImageFileRules.Validate).ToList();
             if (failMessages.Count > 0)
             {
                 return ResponseModelDto<IImmutableList<ArticleImageDto>>.Failure(failMessages);
             }
 
-            var targetDirectory = Path.Combine(GetWebRootPath(), UploadFolder.Replace('/', Path.DirectorySeparatorChar), articleId.ToString());
+            var targetDirectory = Path.Combine(
+                ImageFileRules.GetWebRootPath(_environment),
+                UploadFolder.Replace('/', Path.DirectorySeparatorChar),
+                articleId.ToString());
             Directory.CreateDirectory(targetDirectory);
 
             var entities = new List<ArticleImageEntity>();
@@ -59,8 +57,7 @@ namespace Service
             {
                 foreach (var file in files)
                 {
-                    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                    var fileName = $"{Guid.NewGuid()}{extension}";
+                    var fileName = ImageFileRules.BuildStoredFileName(file);
                     var physicalPath = Path.Combine(targetDirectory, fileName);
 
                     await using (var stream = new FileStream(physicalPath, FileMode.CreateNew))
@@ -92,7 +89,7 @@ namespace Service
                 // DB kaydı başarısız olursa diskte yetim dosya bırakmayalım
                 foreach (var path in writtenFiles)
                 {
-                    TryDeleteFile(path);
+                    ImageFileRules.TryDeleteFile(path);
                 }
                 throw;
             }
@@ -121,49 +118,11 @@ namespace Service
             await _unitOfWork.CommitAsync();
 
             // Kayıt soft-delete edildi; dosya diskte kalırsa URL'i hâlâ servis edileceği için fiziksel dosyayı da siliyoruz.
-            TryDeleteFile(Path.Combine(GetWebRootPath(), image.Path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)));
+            ImageFileRules.TryDeleteFile(Path.Combine(
+                ImageFileRules.GetWebRootPath(_environment),
+                image.Path.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)));
 
             return ResponseModelDto<NoContent>.Success(HttpStatusCode.NoContent);
-        }
-
-        private static IEnumerable<string> Validate(IFormFile file)
-        {
-            if (file.Length == 0)
-            {
-                yield return $"{file.FileName}: Dosya boş.";
-                yield break;
-            }
-
-            if (file.Length > MaxFileSizeInBytes)
-            {
-                yield return $"{file.FileName}: Dosya boyutu en fazla {MaxFileSizeInBytes / (1024 * 1024)} MB olabilir.";
-            }
-
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!AllowedExtensions.Contains(extension))
-            {
-                yield return $"{file.FileName}: Sadece {string.Join(", ", AllowedExtensions)} uzantılı dosyalar yüklenebilir.";
-            }
-
-            if (!AllowedContentTypes.Contains(file.ContentType.ToLowerInvariant()))
-            {
-                yield return $"{file.FileName}: Geçersiz içerik tipi ({file.ContentType}).";
-            }
-        }
-
-        private string GetWebRootPath()
-        {
-            var webRootPath = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
-            Directory.CreateDirectory(webRootPath);
-            return webRootPath;
-        }
-
-        private static void TryDeleteFile(string physicalPath)
-        {
-            if (File.Exists(physicalPath))
-            {
-                File.Delete(physicalPath);
-            }
         }
     }
 }
