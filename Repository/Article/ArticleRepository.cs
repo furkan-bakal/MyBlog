@@ -24,6 +24,16 @@ namespace Repository
                 .ToListAsync();
         }
 
+        public async Task<int> IncrementViewCount(Guid id)
+        {
+            // ExecuteUpdateAsync change tracker'ı atlar ve tek UPDATE gönderir;
+            // eşzamanlı isteklerde sayaç kaybı olmaz. Global query filter sayesinde
+            // silinmiş makaleler zaten güncellenmez.
+            return await context.Set<ArticleEntity>()
+                .Where(a => a.Id == id)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(a => a.ViewCount, a => a.ViewCount + 1));
+        }
+
         public async Task<ArticleEntity?> GetByIdWithCategory(Guid id)
         {
             return await context.Set<ArticleEntity>()

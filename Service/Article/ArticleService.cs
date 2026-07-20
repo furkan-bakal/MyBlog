@@ -45,6 +45,9 @@ namespace Service
 
         public async Task<ResponseModelDto<ArticleDto?>> GetById(Guid id)
         {
+            // Önce artır, sonra oku: dönen DTO bu okumayı da içeren güncel sayacı taşır.
+            await _articleRepository.IncrementViewCount(id);
+
             var article = await _articleRepository.GetByIdWithCategory(id);
 
             var articleDto = _mapper.Map<ArticleEntity, ArticleDto>(article!);
