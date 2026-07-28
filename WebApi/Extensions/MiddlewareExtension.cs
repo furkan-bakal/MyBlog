@@ -39,6 +39,8 @@ namespace WebApi.Extensions
             // Yüklenen article görselleri wwwroot altından servis edilir
             app.UseStaticFiles();
 
+            app.UseRateLimiter();
+
             app.UseAuthentication();
             app.UseAuthorization();
 

@@ -6,7 +6,7 @@ namespace Service.User
 {
     public class UserSeedData
     {
-        public static async Task SeedAsync(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager)
+        public static async Task SeedAsync(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, SeedUserOptions seedUser)
         {
             var adminRole = await roleManager.FindByNameAsync("admin");
             if (adminRole is null)
@@ -29,20 +29,35 @@ namespace Service.User
 
             if (user is null)
             {
+                if (string.IsNullOrWhiteSpace(seedUser.UserName) || string.IsNullOrWhiteSpace(seedUser.Password))
+                {
+                    throw new InvalidOperationException(
+                        "Admin kullanıcısı yok ve seed bilgileri tanımlı değil. " +
+                        "SeedUser__UserName / SeedUser__Password (opsiyonel: SeedUser__Email) ortam değişkenlerini " +
+                        "veya user-secrets değerlerini ayarlayın.");
+                }
+
                 user = new AppUser
                 {
                     Id = Guid.NewGuid(),
-                    UserName = "admin",
-                    Email = "admin@example.com",
+                    UserName = seedUser.UserName,
+                    Email = string.IsNullOrWhiteSpace(seedUser.Email) ? null : seedUser.Email,
                     SecurityStamp = Guid.NewGuid().ToString()
                 };
-                
-                await userManager.CreateAsync(user, "Password12*");
+
+                var result = await userManager.CreateAsync(user, seedUser.Password);
+
+                if (!result.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        "Seed admin kullanıcısı oluşturulamadı: " +
+                        string.Join(" | ", result.Errors.Select(e => e.Description)));
+                }
             }
 
-            if (!await userManager.IsInRoleAsync(user!, "admin"))
+            if (!await userManager.IsInRoleAsync(user, "admin"))
             {
-                await userManager.AddToRoleAsync(user!, "admin");
+                await userManager.AddToRoleAsync(user, "admin");
             }
         }
     }

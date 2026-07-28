@@ -14,8 +14,8 @@ namespace Repository
             builder.Property(a => a.Title).IsRequired().HasMaxLength(200);
             builder.Property(a => a.Author).IsRequired().HasMaxLength(100);
             builder.Property(a => a.ViewCount).IsRequired().HasDefaultValue(0);
-
-            // Content bilinçli olarak sınırsız (text) bırakıldı; bir blog yazısına karakter üst sınırı koymuyoruz.
+            builder.Property(a => a.LikeCount).IsRequired().HasDefaultValue(0);
+            builder.Property(a => a.CommentCount).IsRequired().HasDefaultValue(0);
             builder.Property(a => a.Content).IsRequired();
         }
     }

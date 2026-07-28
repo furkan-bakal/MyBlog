@@ -17,6 +17,7 @@ namespace Repository
 
         public DbSet<ArticleEntity> Articles { get; set; }
         public DbSet<ArticleImageEntity> ArticleImages { get; set; }
+        public DbSet<ArticleCommentEntity> ArticleComments { get; set; }
         public DbSet <CategoryEntity> Categories { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -59,7 +60,6 @@ namespace Repository
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Soft-delete filtreleri, alan kısıtları ve ilişkiler IEntityTypeConfiguration sınıflarında tanımlı.
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
             base.OnModelCreating(modelBuilder);

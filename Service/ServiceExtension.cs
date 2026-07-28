@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Repository;
 using Repository.Identity;
@@ -16,6 +17,7 @@ using Service.ExceptionHandlers;
 using Service.Logger;
 using Service.Token;
 using Service.User;
+using Service.Visitor;
 using System.Text;
 
 namespace WebApi.Extensions
@@ -33,6 +35,13 @@ namespace WebApi.Extensions
             });
             service.AddArticleService();
             service.AddArticleImageService();
+            service.AddArticleLikeService();
+            service.AddArticleCommentService();
+
+            // Anonim beğeni tekilleştirmesi ziyaretçi hash'ine ve süreç belleğine dayanıyor.
+            service.AddHttpContextAccessor();
+            service.AddMemoryCache();
+            service.AddSingleton<IVisitorIdentityService, VisitorIdentityService>();
             service.AddImageService();
             service.AddCategoryService();
             service.AddExceptionHandler<GlobalExceptionHandler>();
@@ -51,6 +60,11 @@ namespace WebApi.Extensions
                 .ValidateOnStart();
 
             service.Configure<Clients>(configuration.GetSection("Clients"));
+
+            // Seed admin kullanıcı adı/parolası ortam değişkeninden (SeedUser__UserName gibi)
+            // veya user-secrets'tan gelir.
+            service.Configure<SeedUserOptions>(configuration.GetSection(SeedUserOptions.SectionName));
+
             service.AddScoped<ITokenService, TokenService>();
             service.AddScoped<UserService>();
             service.AddValidatorsFromAssemblyContaining<CoreAssembly>();
@@ -63,8 +77,9 @@ namespace WebApi.Extensions
             using var scope = app.Services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
+            var seedUser = scope.ServiceProvider.GetRequiredService<IOptions<SeedUserOptions>>().Value;
 
-            await UserSeedData.SeedAsync(userManager, roleManager);
+            await UserSeedData.SeedAsync(userManager, roleManager, seedUser);
         }
 
         public static void AddIdentityExt(this IServiceCollection service)

@@ -1,6 +1,8 @@
 using Core;
 using FluentValidation;
+using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
+using System.Threading.RateLimiting;
 using Serilog.Events;
 using Serilog.Sinks.PostgreSQL;
 using WebApi.Extensions;
@@ -62,6 +64,30 @@ try
                   .AllowAnyMethod()
                   .AllowCredentials();
         });
+    });
+
+    // Beğeni ve yorum anonim olduğu için tek koruma IP başına hız sınırı.
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        options.AddPolicy(RateLimitPolicies.ArticleLike, httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(1)
+                }));
+
+        options.AddPolicy(RateLimitPolicies.ArticleComment, httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 3,
+                    Window = TimeSpan.FromMinutes(1)
+                }));
     });
 
     builder.Services.AddRepository(builder.Configuration);
