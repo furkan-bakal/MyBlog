@@ -1,5 +1,7 @@
 using Core;
 using FluentValidation;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using System.Threading.RateLimiting;
@@ -54,17 +56,50 @@ try
     builder.Services.AddControllers(x => x.Filters.Add<ValidationFilter>());
     builder.Services.AddScoped<NotFoundFilter>();
 
-    // CORS: allow Angular dev server
-    builder.Services.AddCors(options =>
+    // Reverse proxy arkasında istemcinin gerçek IP'si ve şeması X-Forwarded-* başlıklarından
+    // okunur. Hız sınırı ve ziyaretçi hash'i RemoteIpAddress'e dayandığı için bu şart:
+    // aksi halde tüm trafik proxy'nin tek IP'si gibi görünür ve aynı kovayı paylaşır.
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
-        options.AddPolicy("AllowAngularDevClient", policy =>
-        {
-            policy.WithOrigins("http://localhost:4200")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        // Proxy compose ağında; IP'si sabit olmadığı için bilinen-proxy listesi temizleniyor.
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
     });
+
+    // CORS: tek origin (reverse proxy) kurulumunda gerek yok, bu yüzden origin listesi
+    // konfigürasyondan gelir ve boşsa politika hiç kaydedilmez — AllowCredentials()
+    // boş origin listesiyle çalışma zamanında patlar.
+    var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()?
+        .Where(origin => !string.IsNullOrWhiteSpace(origin))
+        .ToArray() ?? [];
+
+    if (corsOrigins.Length > 0)
+    {
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("Default", policy =>
+            {
+                policy.WithOrigins(corsOrigins)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+    }
+
+    // Identity'nin güvenlik damgası/token'ları Data Protection'a dayanır. Anahtarlar
+    // konteyner içinde kalırsa her yeniden başlatmada oturumlar düşer; kalıcı bir
+    // dizine yazılır (yol verilmezse varsayılan davranış korunur).
+    var dataProtectionKeysPath = builder.Configuration["DataProtection:KeysPath"];
+    if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+    {
+        builder.Services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+            .SetApplicationName("MyBlog");
+    }
+
+    builder.Services.AddHealthChecks();
 
     // Beğeni ve yorum anonim olduğu için tek koruma IP başına hız sınırı.
     builder.Services.AddRateLimiter(options =>
@@ -98,22 +133,37 @@ try
 
     var app = builder.Build();
 
+    // İlk middleware olmalı: request logging, hız sınırı ve ziyaretçi hash'i
+    // bundan sonra gerçek istemci IP'sini görebilsin.
+    app.UseForwardedHeaders();
+
     // Serilog ile HTTP request loglama
     app.UseSerilogRequestLogging();
+
+    // Şema seed'den önce hazır olmalı.
+    await app.MigrateDatabaseAsync();
 
     // Configure the HTTP request pipeline.
     await app.seedUserData();
 
     // Enable CORS policy
-    app.UseCors("AllowAngularDevClient");
+    if (corsOrigins.Length > 0)
+    {
+        app.UseCors("Default");
+    }
 
     app.AddMiddleware();
 
     app.Run();
 }
-catch (Exception ex)
+// HostAbortedException'ı dışarıda bırak: `dotnet ef migrations add` host'u kurup
+// bu istisnayla iptal eder; aksi halde her design-time EF komutu 1 ile çıkardı.
+catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "Uygulama başlatılamadı!");
+    // Bu satır olmadan başlangıç hatası exit code 0 döner; Docker uygulamayı
+    // "başarıyla bitti" sayar ve restart politikası hiç devreye girmez.
+    Environment.ExitCode = 1;
 }
 finally
 {

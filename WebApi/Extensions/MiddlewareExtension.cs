@@ -34,7 +34,13 @@ namespace WebApi.Extensions
                 app.MapOpenApi();
             }
 
-            app.UseHttpsRedirection();
+            // TLS'i reverse proxy sonlandırıyor; konteynerde Kestrel yalnızca HTTP dinliyor.
+            // Koşulsuz yönlendirme burada ya "Failed to determine the https port" uyarısı
+            // basar ya da proxy arkasında yönlendirme döngüsü kurar.
+            if (app.Configuration.GetValue("Https:Enforce", false))
+            {
+                app.UseHttpsRedirection();
+            }
 
             // Yüklenen article görselleri wwwroot altından servis edilir
             app.UseStaticFiles();
@@ -45,6 +51,9 @@ namespace WebApi.Extensions
             app.UseAuthorization();
 
             app.MapControllers();
+
+            // Konteyner healthcheck'i için. Reverse proxy bu yolu dışarıya açmıyor.
+            app.MapHealthChecks("/health");
         }
     }
 }

@@ -1,0 +1,19 @@
+.git
+.github
+.gitignore
+.gitattributes
+.vs
+**/bin
+**/obj
+
+# .sln dışında kalan ölü scaffold projesi
+MyBlog.Api/
+
+# Yüklenen görseller named volume'de yaşıyor, imaja girmemeli
+WebApi/wwwroot/uploads/
+
+**/*.user
+**/*.suo
+Dockerfile
+.dockerignore
+README.md
